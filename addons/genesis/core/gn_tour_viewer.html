@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Virtual tour</title>
+<!-- A Genesis virtual tour: every view in this one file, so it can be
+     emailed, put on a USB stick or hosted anywhere. Drag to look round,
+     click a ring to walk to the next view. Headsets get "Enter VR" when the
+     file is served over https (any static host). -->
+<style>
+  :root { --ink: #f4f1ea; --glass: rgba(18, 18, 20, 0.62); --edge: rgba(255, 255, 255, 0.16); --accent: #ffd479; }
+  html, body { margin: 0; height: 100%; background: #0d0d0f; color: var(--ink); overflow: hidden;
+    font: 15px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; touch-action: none; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+  .bar { position: fixed; left: 16px; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: none; }
+  .bar > * { pointer-events: auto; }
+  #top { top: 16px; }
+  #bottom { bottom: 16px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  #title { font-weight: 600; margin-right: auto; padding: 8px 12px; background: var(--glass); border: 1px solid var(--edge);
+    border-radius: 10px; backdrop-filter: blur(8px); max-width: 60vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  button { font: inherit; color: var(--ink); background: var(--glass); border: 1px solid var(--edge); border-radius: 10px;
+    padding: 8px 12px; cursor: pointer; backdrop-filter: blur(8px); white-space: nowrap; }
+  button:hover { border-color: rgba(255, 255, 255, 0.4); }
+  button.on { border-color: var(--accent); color: var(--accent); }
+  .spot { position: fixed; transform: translate(-50%, 18px); padding: 4px 9px; border-radius: 8px; background: var(--glass);
+    border: 1px solid var(--edge); font-size: 13px; white-space: nowrap; cursor: pointer; backdrop-filter: blur(6px); }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; font-size: 17px; background: #0d0d0f; }
+  #hint { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); padding: 6px 12px; border-radius: 9px;
+    background: var(--glass); font-size: 13px; transition: opacity 1s; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="top" class="bar"><div id="title"></div><button id="vr" hidden>Enter VR</button><button id="full">Full screen</button></div>
+<div id="bottom" class="bar"></div>
+<div id="spots"></div>
+<div id="hint">Drag to look around · scroll or pinch to zoom · click a ring to move</div>
+<div id="loading">Loading the tour…</div>
+<script>
+const TOUR = /*TOUR_JSON*/null;
+
+const MAX_SPOTS = 16;
+const canvas = document.getElementById("view");
+const gl = canvas.getContext("webgl", { antialias: false, xrCompatible: true });
+
+const VERT = `attribute vec2 corner; varying vec2 ndc;
+void main() { ndc = corner; gl_Position = vec4(corner, 0.0, 1.0); }`;
+const FRAG = `precision highp float;
+varying vec2 ndc;
+uniform mat4 invViewProj;
+uniform sampler2D pano;
+uniform float halves;    // 1 for a mono panorama, 0.5 for top-bottom stereo
+uniform float eye;       // 0 left (top half), 1 right (bottom half)
+uniform float turn;      // added to longitude, keeps the heading between views
+uniform vec3 spots[${MAX_SPOTS}];
+uniform float spotCount;
+uniform float hot;       // the ring being pointed at, or -1
+void main() {
+  vec4 p = invViewProj * vec4(ndc, 1.0, 1.0);
+  vec3 d = normalize(p.xyz / p.w);
+  float lon = atan(d.x, -d.z) + turn;
+  float lat = asin(clamp(d.y, -1.0, 1.0));
+  vec2 uv = vec2(fract(lon / 6.2831853 + 0.5), 0.5 - lat / 3.1415926);
+  uv.y = uv.y * halves + eye * 0.5;
+  vec3 c = texture2D(pano, uv).rgb;
+  vec3 dp = vec3(sin(lon) * cos(lat), sin(lat), -cos(lon) * cos(lat));
+  for (int i = 0; i < ${MAX_SPOTS}; i++) {
+    if (float(i) >= spotCount) break;
+    float a = acos(clamp(dot(dp, spots[i]), -1.0, 1.0));
+    float r = 0.035;
+    float ring = smoothstep(0.012, 0.004, abs(a - r));
+    float fill = smoothstep(r, r - 0.006, a) * 0.28;
+    vec3 tint = float(i) == hot ? vec3(1.0, 0.83, 0.47) : vec3(1.0);
+    c = mix(c, tint, max(ring, fill));
+  }
+  gl_FragColor = vec4(c, 1.0);
+}`;
+
+function shader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, VERT));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const cornerLoc = gl.getAttribLocation(prog, "corner");
+gl.enableVertexAttribArray(cornerLoc);
+gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0);
+const U = {};
+for (const n of ["invViewProj", "pano", "halves", "eye", "turn", "spots", "spotCount", "hot"]) U[n] = gl.getUniformLocation(prog, n);
+
+// --- 4x4 matrices, column-major as WebGL wants them ---
+function perspective(fovY, aspect, near, far) {
+  const f = 1 / Math.tan(fovY / 2), nf = 1 / (near - far);
+  return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
+}
+function multiply(a, b) {
+  const o = new Array(16);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
+    let s = 0;
+    for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k];
+    o[c * 4 + r] = s;
+  }
+  return o;
+}
+function invert(m) {
+  const inv = new Array(16);
+  inv[0] = m[5]*m[10]*m[15]-m[5]*m[11]*m[14]-m[9]*m[6]*m[15]+m[9]*m[7]*m[14]+m[13]*m[6]*m[11]-m[13]*m[7]*m[10];
+  inv[4] = -m[4]*m[10]*m[15]+m[4]*m[11]*m[14]+m[8]*m[6]*m[15]-m[8]*m[7]*m[14]-m[12]*m[6]*m[11]+m[12]*m[7]*m[10];
+  inv[8] = m[4]*m[9]*m[15]-m[4]*m[11]*m[13]-m[8]*m[5]*m[15]+m[8]*m[7]*m[13]+m[12]*m[5]*m[11]-m[12]*m[7]*m[9];
+  inv[12] = -m[4]*m[9]*m[14]+m[4]*m[10]*m[13]+m[8]*m[5]*m[14]-m[8]*m[6]*m[13]-m[12]*m[5]*m[10]+m[12]*m[6]*m[9];
+  inv[1] = -m[1]*m[10]*m[15]+m[1]*m[11]*m[14]+m[9]*m[2]*m[15]-m[9]*m[3]*m[14]-m[13]*m[2]*m[11]+m[13]*m[3]*m[10];
+  inv[5] = m[0]*m[10]*m[15]-m[0]*m[11]*m[14]-m[8]*m[2]*m[15]+m[8]*m[3]*m[14]+m[12]*m[2]*m[11]-m[12]*m[3]*m[10];
+  inv[9] = -m[0]*m[9]*m[15]+m[0]*m[11]*m[13]+m[8]*m[1]*m[15]-m[8]*m[3]*m[13]-m[12]*m[1]*m[11]+m[12]*m[3]*m[9];
+  inv[13] = m[0]*m[9]*m[14]-m[0]*m[10]*m[13]-m[8]*m[1]*m[14]+m[8]*m[2]*m[13]+m[12]*m[1]*m[10]-m[12]*m[2]*m[9];
+  inv[2] = m[1]*m[6]*m[15]-m[1]*m[7]*m[14]-m[5]*m[2]*m[15]+m[5]*m[3]*m[14]+m[13]*m[2]*m[7]-m[13]*m[3]*m[6];
+  inv[6] = -m[0]*m[6]*m[15]+m[0]*m[7]*m[14]+m[4]*m[2]*m[15]-m[4]*m[3]*m[14]-m[12]*m[2]*m[7]+m[12]*m[3]*m[6];
+  inv[10] = m[0]*m[5]*m[15]-m[0]*m[7]*m[13]-m[4]*m[1]*m[15]+m[4]*m[3]*m[13]+m[12]*m[1]*m[7]-m[12]*m[3]*m[5];
+  inv[14] = -m[0]*m[5]*m[14]+m[0]*m[6]*m[13]+m[4]*m[1]*m[14]-m[4]*m[2]*m[13]-m[12]*m[1]*m[6]+m[12]*m[2]*m[5];
+  inv[3] = -m[1]*m[6]*m[11]+m[1]*m[7]*m[10]+m[5]*m[2]*m[11]-m[5]*m[3]*m[10]-m[9]*m[2]*m[7]+m[9]*m[3]*m[6];
+  inv[7] = m[0]*m[6]*m[11]-m[0]*m[7]*m[10]-m[4]*m[2]*m[11]+m[4]*m[3]*m[10]+m[8]*m[2]*m[7]-m[8]*m[3]*m[6];
+  inv[11] = -m[0]*m[5]*m[11]+m[0]*m[7]*m[9]+m[4]*m[1]*m[11]-m[4]*m[3]*m[9]-m[8]*m[1]*m[7]+m[8]*m[3]*m[5];
+  inv[15] = m[0]*m[5]*m[10]-m[0]*m[6]*m[9]-m[4]*m[1]*m[10]+m[4]*m[2]*m[9]+m[8]*m[1]*m[6]-m[8]*m[2]*m[5];
+  const det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+  return inv.map(v => v / det);
+}
+// The view rotation for a heading and pitch (no position: a panorama is at infinity).
+function lookMatrix(yaw, pitch) {
+  const f = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
+  const r = [Math.cos(yaw), 0, Math.sin(yaw)];
+  const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
+  // Rows are the camera's axes: the transpose of its rotation.
+  return [r[0], u[0], -f[0], 0, r[1], u[1], -f[1], 0, r[2], u[2], -f[2], 0, 0, 0, 0, 1];
+}
+function withoutPosition(m) { const o = m.slice(); o[12] = o[13] = o[14] = 0; return o; }
+function dirOf(lon, lat) { return [Math.sin(lon) * Math.cos(lat), Math.sin(lat), -Math.cos(lon) * Math.cos(lat)]; }
+
+// --- the tour ---
+const state = { stop: 0, yaw: 0, pitch: 0, fov: 75 * Math.PI / 180, turn: 0, hot: -1, textures: [] };
+const halves = TOUR.stereo ? 0.5 : 1.0;
+
+function loadTexture(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      resolve(t);
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function spotsOf(stop) { return TOUR.stops[stop].spots.slice(0, MAX_SPOTS); }
+
+function go(to) {
+  // Keep facing the same way in the world as you walk between views.
+  state.turn += TOUR.stops[state.stop].yaw - TOUR.stops[to].yaw;
+  state.stop = to;
+  state.hot = -1;
+  buildMenu();
+  buildLabels();
+  remember();
+}
+
+// The address holds the view and heading (tour.html#3/90), so a link can
+// open the tour at one spot facing one way.
+function remember() {
+  const deg = Math.round(((state.yaw + state.turn) * 180 / Math.PI % 360 + 360) % 360);
+  history.replaceState(null, "", "#" + (state.stop + 1) + "/" + deg);
+}
+function recall() {
+  const m = location.hash.match(/^#(\d+)(?:\/(-?[\d.]+))?/);
+  if (!m) return;
+  state.stop = Math.max(0, Math.min(TOUR.stops.length - 1, parseInt(m[1]) - 1));
+  if (m[2] !== undefined) state.yaw = parseFloat(m[2]) * Math.PI / 180;
+}
+
+function draw(viewProj, eye, viewport) {
+  gl.viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+  gl.uniformMatrix4fv(U.invViewProj, false, new Float32Array(invert(viewProj)));
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, state.textures[state.stop]);
+  gl.uniform1i(U.pano, 0);
+  gl.uniform1f(U.halves, halves);
+  gl.uniform1f(U.eye, TOUR.stereo ? eye : 0);
+  gl.uniform1f(U.turn, state.turn);
+  const spots = spotsOf(state.stop);
+  const flat = new Float32Array(MAX_SPOTS * 3);
+  spots.forEach((s, i) => flat.set(dirOf(s.lon, s.lat), i * 3));
+  gl.uniform3fv(U.spots, flat);
+  gl.uniform1f(U.spotCount, spots.length);
+  gl.uniform1f(U.hot, state.hot);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+// --- in the browser ---
+function screenViewProj() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  return multiply(perspective(state.fov, w / h, 0.1, 10), lookMatrix(state.yaw, state.pitch));
+}
+function frame() {
+  if (xrSession) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  const vp = screenViewProj();
+  draw(vp, 0, [0, 0, w, h]);
+  placeLabels(vp);
+  requestAnimationFrame(frame);
+}
+
+const labels = [];
+function buildLabels() {
+  const box = document.getElementById("spots");
+  box.innerHTML = "";
+  labels.length = 0;
+  spotsOf(state.stop).forEach(s => {
+    const el = document.createElement("div");
+    el.className = "spot";
+    el.textContent = TOUR.stops[s.to].name;
+    el.onclick = () => go(s.to);
+    box.appendChild(el);
+    labels.push(el);
+  });
+}
+function placeLabels(vp) {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  spotsOf(state.stop).forEach((s, i) => {
+    const d = dirOf(s.lon - state.turn, s.lat);
+    const c = multiply(vp, [d[0], d[1], d[2], 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const x = c[0] / c[3], y = c[1] / c[3];
+    const shown = c[3] > 0 && Math.abs(x) < 1.1 && Math.abs(y) < 1.1;
+    labels[i].style.display = shown ? "block" : "none";
+    if (shown) { labels[i].style.left = ((x + 1) / 2 * w) + "px"; labels[i].style.top = ((1 - y) / 2 * h) + "px"; }
+  });
+}
+// The ring nearest a direction (in pano space), within reach, or -1.
+function spotNear(lon, lat, reach) {
+  const d = dirOf(lon, lat);
+  let best = -1, bestA = reach;
+  spotsOf(state.stop).forEach((s, i) => {
+    const e = dirOf(s.lon, s.lat);
+    const a = Math.acos(Math.max(-1, Math.min(1, d[0] * e[0] + d[1] * e[1] + d[2] * e[2])));
+    if (a < bestA) { bestA = a; best = i; }
+  });
+  return best;
+}
+function pointedAt(px, py) {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  const inv = invert(screenViewProj());
+  const x = px / w * 2 - 1, y = 1 - py / h * 2;
+  const p = multiply(inv, [x, y, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const d = [p[0] / p[3], p[1] / p[3], p[2] / p[3]];
+  const n = Math.hypot(d[0], d[1], d[2]);
+  return [Math.atan2(d[0], -d[2]) + state.turn, Math.asin(d[1] / n)];
+}
+
+const pointers = new Map();
+let dragged = 0, pinch = 0;
+canvas.addEventListener("pointerdown", e => {
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  dragged = 0;
+  canvas.classList.add("dragging");
+  hideHint();
+});
+canvas.addEventListener("pointermove", e => {
+  if (!pointers.has(e.pointerId)) {
+    const [lon, lat] = pointedAt(e.clientX, e.clientY);
+    state.hot = spotNear(lon, lat, 0.06);
+    canvas.style.cursor = state.hot >= 0 ? "pointer" : "";
+    return;
+  }
+  const [px, py] = pointers.get(e.pointerId);
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch) zoom(pinch / dist);
+    pinch = dist;
+    return;
+  }
+  const per = state.fov / canvas.clientHeight;
+  state.yaw -= (e.clientX - px) * per;
+  state.pitch = Math.max(-1.5, Math.min(1.5, state.pitch + (e.clientY - py) * per));
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(remember, 300);
+  dragged += Math.abs(e.clientX - px) + Math.abs(e.clientY - py);
+});
+function release(e) {
+  pointers.delete(e.pointerId);
+  pinch = 0;
+  canvas.classList.remove("dragging");
+  if (e.type === "pointerup" && dragged < 6) {
+    const [lon, lat] = pointedAt(e.clientX, e.clientY);
+    const i = spotNear(lon, lat, 0.06);
+    if (i >= 0) go(spotsOf(state.stop)[i].to);
+  }
+}
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
+function zoom(f) { state.fov = Math.max(0.5, Math.min(1.9, state.fov * f)); }
+canvas.addEventListener("wheel", e => { e.preventDefault(); zoom(Math.exp(e.deltaY * 0.001)); hideHint(); }, { passive: false });
+window.addEventListener("keydown", e => {
+  const step = 0.08;
+  if (e.key === "ArrowLeft") state.yaw -= step;
+  else if (e.key === "ArrowRight") state.yaw += step;
+  else if (e.key === "ArrowUp") state.pitch = Math.min(1.5, state.pitch + step);
+  else if (e.key === "ArrowDown") state.pitch = Math.max(-1.5, state.pitch - step);
+  else if (e.key === "PageDown" || e.key === "n") go((state.stop + 1) % TOUR.stops.length);
+  else if (e.key === "PageUp" || e.key === "p") go((state.stop + TOUR.stops.length - 1) % TOUR.stops.length);
+});
+function hideHint() { document.getElementById("hint").style.opacity = 0; }
+
+function buildMenu() {
+  const bar = document.getElementById("bottom");
+  bar.innerHTML = "";
+  TOUR.stops.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.textContent = s.name;
+    b.className = i === state.stop ? "on" : "";
+    b.onclick = () => go(i);
+    bar.appendChild(b);
+  });
+}
+
+document.getElementById("full").onclick = () => {
+  if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.();
+};
+
+// --- in a headset ---
+let xrSession = null, xrSpace = null;
+async function enterVR() {
+  xrSession = await navigator.xr.requestSession("immersive-vr");
+  await gl.makeXRCompatible?.();
+  xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+  xrSpace = await xrSession.requestReferenceSpace("local");
+  // Start the headset facing the way the browser view faces.
+  state.turn += state.yaw;
+  xrSession.addEventListener("select", e => {
+    const pose = e.frame.getPose(e.inputSource.targetRaySpace, xrSpace);
+    if (!pose) return;
+    const m = pose.transform.matrix;
+    const d = [-m[8], -m[9], -m[10]];
+    const i = spotNear(Math.atan2(d[0], -d[2]) + state.turn, Math.asin(Math.max(-1, Math.min(1, d[1]))), 0.2);
+    if (i >= 0) go(spotsOf(state.stop)[i].to);
+  });
+  xrSession.addEventListener("end", () => { state.turn -= state.yaw; xrSession = null; requestAnimationFrame(frame); });
+  document.getElementById("spots").innerHTML = "";
+  xrSession.requestAnimationFrame(xrFrame);
+}
+function xrFrame(t, xrframe) {
+  if (!xrSession) return;
+  xrSession.requestAnimationFrame(xrFrame);
+  const pose = xrframe.getViewerPose(xrSpace);
+  if (!pose) return;
+  const layer = xrSession.renderState.baseLayer;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, layer.framebuffer);
+  // Highlight whichever ring the head is facing.
+  const hm = pose.transform.matrix;
+  state.hot = spotNear(Math.atan2(-hm[8], hm[10]) + state.turn, Math.asin(Math.max(-1, Math.min(1, -hm[9]))), 0.2);
+  for (const view of pose.views) {
+    const v = layer.getViewport(view);
+    const vp = multiply(view.projectionMatrix, withoutPosition(view.transform.inverse.matrix));
+    draw(vp, view.eye === "right" ? 1 : 0, [v.x, v.y, v.width, v.height]);
+  }
+}
+
+// --- start ---
+(async () => {
+  document.title = TOUR.title;
+  document.getElementById("title").textContent = TOUR.title;
+  try {
+    for (const s of TOUR.stops) state.textures.push(await loadTexture(s.image));
+  } catch (err) {
+    document.getElementById("loading").textContent = "This tour's pictures could not be read.";
+    return;
+  }
+  document.getElementById("loading").remove();
+  recall();
+  buildMenu();
+  buildLabels();
+  requestAnimationFrame(frame);
+  if (navigator.xr && await navigator.xr.isSessionSupported("immersive-vr").catch(() => false)) {
+    const b = document.getElementById("vr");
+    b.hidden = false;
+    b.onclick = () => enterVR().catch(err => { b.textContent = "VR unavailable"; console.error(err); });
+  }
+})();
+</script>
+</body>
+</html>

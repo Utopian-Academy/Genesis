@@ -1,0 +1,611 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "version": "2.0"
+ },
+ "extensionsUsed": [
+  "KHR_materials_clearcoat"
+ ],
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "shrugging"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "Human.body",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.5
+   }
+  },
+  {
+   "alphaMode": "MASK",
+   "doubleSided": true,
+   "extensions": {
+    "KHR_materials_clearcoat": {
+     "clearcoatRoughnessFactor": 0
+    }
+   },
+   "name": "Human.eyebrow002",
+   "normalTexture": {
+    "index": 1
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 2
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.699999988079071
+   },
+   "alphaCutoff": 0.5
+  },
+  {
+   "doubleSided": true,
+   "extensions": {
+    "KHR_materials_clearcoat": {
+     "clearcoatRoughnessFactor": 0
+    }
+   },
+   "name": "Human.low-poly",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 3
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.699999988079071
+   }
+  },
+  {
+   "doubleSided": true,
+   "extensions": {
+    "KHR_materials_clearcoat": {
+     "clearcoatRoughnessFactor": 0
+    }
+   },
+   "name": "Human.male_casualsuit03",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 4
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.699999988079071
+   }
+  },
+  {
+   "doubleSided": true,
+   "extensions": {
+    "KHR_materials_clearcoat": {
+     "clearcoatRoughnessFactor": 0
+    }
+   },
+   "name": "Human.shoes04",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 5
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.699999988079071
+   }
+  },
+  {
+   "alphaMode": "MASK",
+   "doubleSided": true,
+   "extensions": {
+    "KHR_materials_clearcoat": {
+     "clearcoatRoughnessFactor": 0
+    }
+   },
+   "name": "Human.short03",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 6
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.699999988079071
+   },
+   "alphaCutoff": 0.5
+  }
+ ],
+ "meshes": [
+  {
+   "name": "base.001",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    },
+    {
+     "attributes": {
+      "POSITION": 4,
+      "NORMAL": 5,
+      "TEXCOORD_0": 6
+     },
+     "indices": 7,
+     "material": 1
+    },
+    {
+     "attributes": {
+      "POSITION": 8,
+      "NORMAL": 9,
+      "TEXCOORD_0": 10
+     },
+     "indices": 11,
+     "material": 2
+    },
+    {
+     "attributes": {
+      "POSITION": 12,
+      "NORMAL": 13,
+      "TEXCOORD_0": 14
+     },
+     "indices": 15,
+     "material": 3
+    },
+    {
+     "attributes": {
+      "POSITION": 16,
+      "NORMAL": 17,
+      "TEXCOORD_0": 18
+     },
+     "indices": 19,
+     "material": 4
+    },
+    {
+     "attributes": {
+      "POSITION": 20,
+      "NORMAL": 21,
+      "TEXCOORD_0": 22
+     },
+     "indices": 23,
+     "material": 5
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  },
+  {
+   "sampler": 0,
+   "source": 3
+  },
+  {
+   "sampler": 0,
+   "source": 4
+  },
+  {
+   "sampler": 0,
+   "source": 5
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "middleage_lightskinned_male_diffuse2",
+   "uri": "textures/middleage_lightskinned_male_diffuse2.jpg"
+  },
+  {
+   "mimeType": "image/png",
+   "name": "eyebrow002",
+   "uri": "textures/eyebrow002.png"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "brown_eye",
+   "uri": "textures/brown_eye.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "male_casualsuit03_diffuse",
+   "uri": "textures/male_casualsuit03_diffuse.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "shoes04_diffuse",
+   "uri": "textures/shoes04_diffuse.jpg"
+  },
+  {
+   "mimeType": "image/png",
+   "name": "short03_diffuse",
+   "uri": "textures/short03_diffuse.png"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 2319,
+   "max": [
+    0.4248073101043701,
+    1.6114052534103394,
+    0.08027666062116623
+   ],
+   "min": [
+    -0.42498257756233215,
+    0.13826771080493927,
+    -0.4095987379550934
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 2319,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 2319,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5123,
+   "count": 11769,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 49,
+   "max": [
+    0.05507618933916092,
+    1.5000215768814087,
+    -0.09066013246774673
+   ],
+   "min": [
+    -0.05514580011367798,
+    1.487578272819519,
+    -0.11734005808830261
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 5,
+   "componentType": 5126,
+   "count": 49,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 6,
+   "componentType": 5126,
+   "count": 49,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 7,
+   "componentType": 5123,
+   "count": 168,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 8,
+   "componentType": 5126,
+   "count": 58,
+   "max": [
+    0.04353645071387291,
+    1.5014373064041138,
+    -0.08332601189613342
+   ],
+   "min": [
+    -0.043536435812711716,
+    1.4739447832107544,
+    -0.10779844969511032
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 9,
+   "componentType": 5126,
+   "count": 58,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 10,
+   "componentType": 5126,
+   "count": 58,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 11,
+   "componentType": 5123,
+   "count": 288,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 12,
+   "componentType": 5126,
+   "count": 1854,
+   "max": [
+    0.38351014256477356,
+    1.3930821418762207,
+    0.1319524496793747
+   ],
+   "min": [
+    -0.39592689275741577,
+    0.05625750869512558,
+    -0.3014998137950897
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 13,
+   "componentType": 5126,
+   "count": 1854,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 14,
+   "componentType": 5126,
+   "count": 1854,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 15,
+   "componentType": 5123,
+   "count": 9264,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 16,
+   "componentType": 5126,
+   "count": 756,
+   "max": [
+    0.15922333300113678,
+    0.18286749720573425,
+    0.07715922594070435
+   ],
+   "min": [
+    -0.15922152996063232,
+    9.538813174003735e-05,
+    -0.17215268313884735
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 17,
+   "componentType": 5126,
+   "count": 756,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 18,
+   "componentType": 5126,
+   "count": 756,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 19,
+   "componentType": 5123,
+   "count": 3708,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 20,
+   "componentType": 5126,
+   "count": 349,
+   "max": [
+    0.09466784447431564,
+    1.6168631315231323,
+    0.08953467756509781
+   ],
+   "min": [
+    -0.07733756303787231,
+    1.4036413431167603,
+    -0.14180858433246613
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 21,
+   "componentType": 5126,
+   "count": 349,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 22,
+   "componentType": 5126,
+   "count": 349,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 23,
+   "componentType": 5123,
+   "count": 1800,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteLength": 27828,
+   "byteOffset": 0,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 27828,
+   "byteOffset": 27828,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 18552,
+   "byteOffset": 55656,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 23538,
+   "byteOffset": 74208,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteLength": 588,
+   "byteOffset": 97748,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 588,
+   "byteOffset": 98336,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 392,
+   "byteOffset": 98924,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 336,
+   "byteOffset": 99316,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteLength": 696,
+   "byteOffset": 99652,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 696,
+   "byteOffset": 100348,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 464,
+   "byteOffset": 101044,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 576,
+   "byteOffset": 101508,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteLength": 22248,
+   "byteOffset": 102084,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 22248,
+   "byteOffset": 124332,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 14832,
+   "byteOffset": 146580,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 18528,
+   "byteOffset": 161412,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteLength": 9072,
+   "byteOffset": 179940,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 9072,
+   "byteOffset": 189012,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 6048,
+   "byteOffset": 198084,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 7416,
+   "byteOffset": 204132,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteLength": 4188,
+   "byteOffset": 211548,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 4188,
+   "byteOffset": 215736,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 2792,
+   "byteOffset": 219924,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 3600,
+   "byteOffset": 222716,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 226316,
+   "uri": "shrugging_1.bin"
+  }
+ ]
+}

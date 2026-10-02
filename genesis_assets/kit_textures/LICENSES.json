@@ -1,0 +1,150 @@
+{
+  "grille": {
+    "source": "https://ambientcg.com/view?id=SheetMetal001",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.02,
+      0.02,
+      0.022
+    ]
+  },
+  "powder_black": {
+    "source": "https://ambientcg.com/view?id=Plastic013A",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.045,
+      0.045,
+      0.05
+    ]
+  },
+  "powder_white": {
+    "source": "https://ambientcg.com/view?id=Plastic013A",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.86,
+      0.86,
+      0.84
+    ]
+  },
+  "powder_grey": {
+    "source": "https://ambientcg.com/view?id=Plastic013A",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.32,
+      0.33,
+      0.35
+    ]
+  },
+  "plastic_black": {
+    "source": "https://ambientcg.com/view?id=Plastic006",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "alu_brushed": {
+    "source": "https://ambientcg.com/view?id=Metal009",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "alu_satin": {
+    "source": "https://ambientcg.com/view?id=Metal011",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "chrome": {
+    "source": "https://ambientcg.com/view?id=Metal012",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "rubber": {
+    "source": "https://ambientcg.com/view?id=Rubber004",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "deck": {
+    "source": "https://ambientcg.com/view?id=Rubber001",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "fabric_black": {
+    "source": "https://ambientcg.com/view?id=Fabric030",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.05,
+      0.05,
+      0.055
+    ]
+  },
+  "fabric_white": {
+    "source": "https://ambientcg.com/view?id=Fabric030",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.9,
+      0.9,
+      0.88
+    ]
+  },
+  "leather_black": {
+    "source": "https://ambientcg.com/view?id=Leather027",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "linen": {
+    "source": "https://ambientcg.com/view?id=Fabric032",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.93,
+      0.93,
+      0.9
+    ]
+  },
+  "velvet_red": {
+    "source": "https://ambientcg.com/view?id=Fabric030",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.42,
+      0.03,
+      0.05
+    ]
+  },
+  "fabric_burgundy": {
+    "source": "https://ambientcg.com/view?id=Fabric030",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.34,
+      0.04,
+      0.07
+    ]
+  },
+  "wood_light": {
+    "source": "https://ambientcg.com/view?id=Wood092",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": null
+  },
+  "diamond_plate": {
+    "source": "https://ambientcg.com/view?id=DiamondPlate009",
+    "author": "ambientCG",
+    "license": "CC0-1.0",
+    "tint": [
+      0.5,
+      0.51,
+      0.53
+    ]
+  }
+}

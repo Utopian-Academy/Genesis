@@ -1,0 +1,23 @@
+.godot/
+/export/
+/renders/
+/tests/ui_shots/
+/genesis_data/external/
+# Built by tools/setup.py from the CC0 downloads; recreated, never edited.
+/genesis_data/materials/
+/genesis_data/plants/
+# The plant library (tools/make_plants.gd); only the stand-in models that
+# work before setup has run are kept.
+/genesis_assets/trees/*
+!/genesis_assets/trees/tree_round.*
+!/genesis_assets/trees/tree_tall.*
+/genesis_assets/plants/*
+!/genesis_assets/plants/shrub_round.*
+/genesis_assets/grass/*
+!/genesis_assets/grass/grass_tuft.*
+__pycache__/
+
+# Private notes: their own repository, never published here.
+/private-notes/
+# Per-machine test settings (the path to Godot).
+/tests/local.env
